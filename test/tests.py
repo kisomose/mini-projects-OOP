@@ -37,7 +37,7 @@ def test_matatu_route_invalid_inputs():
   with pytest.raises(ValueError, match="Passenger counts cannot be negative"):
     MatatuRoute("Kampala-Ntinda", [35, -5], fare=2000)
 
- #2 MARKET EQUILIBRIUM SOLVER TESTS
+ #2. MARKET EQUILIBRIUM SOLVER TESTS
 
     
 def test_supply_demand_equilibrium_normal():
