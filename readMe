@@ -1,1 +1,17 @@
 
+# Uganda Tax Engine (Mini-Project 2)
+
+An Object-Oriented, statutory-compliant Python tax engine for computing Uganda Revenue Authority (URA) liabilities (Income Tax Act Cap 340, NSSF Act Cap 222, VAT Act Cap 349).
+
+## Repository Structure
+- `src/tax_engine.py`: Core domain logic (`Money`, `TaxContext`, `PAYETax`, `NSSFContribution`, `TaxPlanner`).
+- `tests/test_tax_engine.py`: Unit test suite (boundary tests, Hypothesis property-based tests, exception tests).
+- `project2_tax_engine.ipynb`: Demonstration notebook with live scenarios and discussion questions.
+- `requirements.txt`: Project dependencies.
+- `pytest.ini`: Pytest configuration.
+
+## Setup & Running Instructions
+
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt

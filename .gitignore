@@ -1,1 +1,25 @@
+# Python bytecode & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
+# Jupyter Notebook temporary files
+.ipynb_checkpoints/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Testing & distribution caches
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# System-specific files
+.DS_Store
+Thumbs.db
