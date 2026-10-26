@@ -1,8 +1,9 @@
 # Python bytecode & cache
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
+.ipynb_checkpoints/
+.pytest_cache/
+venv/
 
 # Jupyter Notebook temporary files
 .ipynb_checkpoints/

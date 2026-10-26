@@ -2,6 +2,7 @@
 
 from typing import Tuple, Union
 import numpy as np
+import statistics
 
 
 class DistrictPopulation:
@@ -102,3 +103,14 @@ class DistrictPopulation:
         # Converts population from thousands to individual pupil counts
         total_pupils = forecast_pops * 1000.0 * school_age_ratio
         return np.ceil(total_pupils / pupils_per_classroom).astype(int)
+
+    def compute_summary_stats(self) -> dict:
+    """Computes summary statistics comparing Python's statistics module and NumPy."""
+    return {
+        "mean": float(np.mean(self.populations)),
+        "median": float(np.median(self.populations)),
+        "sample_var_stats": statistics.variance(self.populations),
+        "pop_var_numpy": float(np.var(self.populations, ddof=0)),
+        "sample_var_numpy": float(np.var(self.populations, ddof=1)),
+        "sample_std_numpy": float(np.std(self.populations, ddof=1)),
+    }
