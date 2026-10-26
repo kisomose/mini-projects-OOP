@@ -114,3 +114,106 @@ class DistrictPopulation:
         "sample_var_numpy": float(np.var(self.populations, ddof=1)),
         "sample_std_numpy": float(np.std(self.populations, ddof=1)),
     }
+    def year_on_year_growth_rates(self) -> np.ndarray:
+        """Calculates year-on-year (YoY) growth rates as percentages."""
+        return np.diff(self.populations) / self.populations[:-1] * 100.0
+
+    def cagr(self) -> float:
+        """Calculates the Compound Annual Growth Rate (CAGR) over the observation period."""
+        n_years = self.years[-1] - self.years[0]
+        return float(((self.populations[-1] / self.populations[0]) ** (1.0 / n_years) - 1.0) * 100.0)
+
+class LinearTrendForecaster(Forecaster):
+    """Fits a linear trend using np.polyfit (degree 1)."""
+
+    def __init__(self):
+        super().__init__()
+        self.coeffs = None
+        self.last_year = 0
+
+    def fit(self, years: np.ndarray, populations: np.ndarray) -> "LinearTrendForecaster":
+        self.years = np.asarray(years, dtype=int)
+        self.populations = np.asarray(populations, dtype=float)
+        self.last_year = self.years[-1]
+        
+        t = self.years - self.years[0]
+        self.coeffs = np.polyfit(t, self.populations, 1)
+        self.fitted = True
+        return self
+
+    def predict(self, horizon: int) -> np.ndarray:
+        if not self.fitted:
+            raise ValueError("Model must be fitted first.")
+        if horizon <= 0:
+            raise ValueError("Horizon must be positive.")
+        
+        future_t = np.arange(self.years[-1] - self.years[0] + 1, self.years[-1] - self.years[0] + horizon + 1)
+        poly = np.poly1d(self.coeffs)
+        return poly(future_t)
+
+
+class ExponentialGrowthForecaster(Forecaster):
+    """Fits an exponential / CAGR growth model."""
+
+    def __init__(self):
+        super().__init__()
+        self.r = 0.0
+        self.last_pop = 0.0
+        self.last_year = 0
+
+    def fit(self, years: np.ndarray, populations: np.ndarray) -> "ExponentialGrowthForecaster":
+        years_arr = np.asarray(years, dtype=int)
+        pops_arr = np.asarray(populations, dtype=float)
+        
+        self.last_year = years_arr[-1]
+        self.last_pop = pops_arr[-1]
+        
+        n_years = years_arr[-1] - years_arr[0]
+        self.r = float(np.log(pops_arr[-1] / pops_arr[0]) / n_years)
+        self.fitted = True
+        return self
+
+    def predict(self, horizon: int) -> np.ndarray:
+        if not self.fitted:
+            raise ValueError("Model must be fitted first.")
+        if horizon <= 0:
+            raise ValueError("Horizon must be positive.")
+        
+        t = np.arange(1, horizon + 1)
+        return self.last_pop * np.exp(self.r * t)
+
+
+class FibonacciRatioForecaster(Forecaster):
+    """Scales the last value by successive Fibonacci ratios (F_{n+1}/F_n)."""
+
+    def __init__(self):
+        super().__init__()
+        self.last_pop = 0.0
+        self.fitted = False
+
+    def fit(self, years: np.ndarray, populations: np.ndarray) -> "FibonacciRatioForecaster":
+        pops_arr = np.asarray(populations, dtype=float)
+        self.last_pop = pops_arr[-1]
+        self.fitted = True
+        return self
+
+    def predict(self, horizon: int) -> np.ndarray:
+        if not self.fitted:
+            raise ValueError("Model must be fitted first.")
+        if horizon <= 0:
+            raise ValueError("Horizon must be positive.")
+
+        # Standard Fibonacci sequence growth multipliers
+        # Successive ratios approach the golden ratio (1.618), but we use exact sequence ratios: 1/1, 2/1, 3/2, 5/3, 8/5, etc.
+        fib = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+        ratios = [fib[i+1] / fib[i] for i in range(len(fib) - 1)]
+        
+        predictions = []
+        current_val = self.last_pop
+        for i in range(horizon):
+            ratio = ratios[i % len(ratios)]
+            # Damped scaling relative to growth factor
+            current_val = current_val * (1.0 + (ratio - 1.0) * 0.05)
+            predictions.append(current_val)
+            
+        return np.array(predictions)

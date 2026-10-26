@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from src.project1_population import DistrictPopulation
+from src.project1_population import LinearTrendForecaster, ExponentialGrowthForecaster, FibonacciRatioForecaster
 
 
 def test_district_population_initialization_and_dunders():
@@ -45,3 +45,16 @@ def test_validation_edge_cases_and_exceptions():
     district = DistrictPopulation("Valid", [2015, 2016], [100.0, 105.0])
     with pytest.raises(ValueError, match="greater than zero"):
         district.forecast_exponential(future_years=0)
+
+        
+
+    def test_forecaster_subclasses():
+    years = np.array([2015, 2016, 2017, 2018, 2019])
+    pops = np.array([100.0, 105.0, 110.0, 116.0, 122.0])
+
+    for model_class in [LinearTrendForecaster, ExponentialGrowthForecaster, FibonacciRatioForecaster]:
+        model = model_class()
+        model.fit(years, pops)
+        preds = model.predict(horizon=3)
+        assert len(preds) == 3
+        assert preds[-1] > preds[0]
