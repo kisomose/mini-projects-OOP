@@ -15,3 +15,20 @@ An Object-Oriented, statutory-compliant Python tax engine for computing Uganda R
 ### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
+
+## 📖 Mathematical Stability and Linear Dependency Discussion
+
+### 1. Mathematical Analysis: Rank Deficiency and Determinant Collapse
+In the hybrid micro-grid model, operational dispatch is governed by $Ax = b$, where $A$ is the $3 \times 3$ coefficient matrix mapping solar ($x$), battery ($y$), and diesel ($z$) generation sources. 
+
+If the third constraint equation is a linear combination of the first two equations (meaning Row 3 can be expressed as a scalar multiple or sum of Row 1 and Row 2):
+* **Determinant Collapse:** The determinant of the coefficient matrix collapses to zero ($\det(A) = 0$). Geometrically, the three constraint planes fail to intersect at a unique single point in three-dimensional space.
+* **Infinite Condition Number:** The condition number $\kappa(A) = \|A\| \|A^{-1}\|$ approaches infinity, rendering the matrix singular and non-invertible under standard floating-point arithmetic.
+
+### 2. Computational Impact on Linear Solvers
+When a singular or ill-conditioned matrix is passed to numerical solvers like `scipy.linalg.solve`, the backend LAPACK driver encounters a zero pivot element. This immediately triggers a `LinAlgError`, halting execution and preventing the generation of synthetic dispatch allocations.
+
+### 3. Physical and Operational Realities
+From an energy engineering perspective, linear dependency within operational constraints introduces two distinct physical failure modes:
+* **Inconsistent Systems (No Solution):** If the demand vector $b$ (representing daytime load, critical load, and auxiliary peak load) does not conform to the same linear dependency established by the coefficient rows, the constraints physically contradict one another. No valid combination of solar, battery, and diesel output can satisfy all operational requirements simultaneously.
+* **Under-Determined Systems (Infinite Solutions):** If the demand vector $b$ does satisfy the dependency, the third constraint provides redundant information rather than independent operational boundaries. This results in an infinite family of valid dispatch solutions, meaning the control system loses its ability to uniquely optimize resource allocation among the three generation assets.
